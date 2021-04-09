@@ -1,0 +1,139 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>mackeyglass_rk4</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2009-06-09">
+      <meta name="m-file" content="mackeyglass_rk4"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>mackeyglass_rk4</h1>
+         <introduction>
+            <p>This function computes the numerical solution of the Mackey-Glass delayed differential equation using the 4-th order Runge-Kutta
+               method
+            </p>
+         </introduction>
+         <p><img vspace="5" hspace="5" src="mackeyglass_rk4_eq08182.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_rk4_eq19931.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_rk4_eq21531.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_rk4_eq24500.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_rk4_eq18147.png"> </p>
+         <p>Here is the code for <a href="mackeyglass_eq.html">mackeyglass_eq</a>, the Mackey-Glass delayed differential equation
+         </p>
+         <p><b>Matlab code:</b></p><pre class="codeinput"><span class="keyword">function</span> x_t_plus_deltat = mackeyglass_rk4(x_t, x_t_minus_tau, deltat, a, b)
+    k1 = deltat*mackeyglass_eq(x_t,          x_t_minus_tau, a, b);
+    k2 = deltat*mackeyglass_eq(x_t+0.5*k1,   x_t_minus_tau, a, b);
+    k3 = deltat*mackeyglass_eq(x_t+0.5*k2,   x_t_minus_tau, a, b);
+    k4 = deltat*mackeyglass_eq(x_t+k3,       x_t_minus_tau, a, b);
+    x_t_plus_deltat = (x_t + k1/6 + k2/3 + k3/3 + k4/6);
+<span class="keyword">end</span>
+</pre><p><a href="mackeyglass.html"><i>back to main</i></a></p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% mackeyglass_rk4
+% This function computes the numerical solution of the Mackey-Glass
+% delayed differential equation using the 4-th order Runge-Kutta method
+
+
+%%
+% $$k_1=\Delta t \cdot mackeyglass\_eq(x(t), x(t-\tau), a, b)$$
+%%
+% $$k_2=\Delta t \cdot mackeyglass\_eq(x(t+\frac{1}{2}k_1), x(t-\tau), a, b)$$
+%%
+% $$k_3=\Delta t \cdot mackeyglass\_eq(x(t+\frac{1}{2}k_2), x(t-\tau), a, b)$$
+%%
+% $$k_4=\Delta t \cdot mackeyglass\_eq(x(t+k_3), x(t-\tau), a, b)$$
+%%
+% $$x(t+\Delta t) = x(t) + \frac{k_1}{6}+ \frac{k_2}{3} + \frac{k_3}{6} + \frac{k_4}{6}$$
+
+%%
+% Here is the code for <mackeyglass_eq.html mackeyglass_eq>, 
+% the Mackey-Glass delayed differential equation
+
+
+%%
+% *Matlab code:*
+function x_t_plus_deltat = mackeyglass_rk4(x_t, x_t_minus_tau, deltat, a, b)
+    k1 = deltat*mackeyglass_eq(x_t,          x_t_minus_tau, a, b);
+    k2 = deltat*mackeyglass_eq(x_t+0.5*k1,   x_t_minus_tau, a, b);
+    k3 = deltat*mackeyglass_eq(x_t+0.5*k2,   x_t_minus_tau, a, b);
+    k4 = deltat*mackeyglass_eq(x_t+k3,       x_t_minus_tau, a, b);
+    x_t_plus_deltat = (x_t + k1/6 + k2/3 + k3/3 + k4/6);
+end
+
+
+%%
+%
+% <mackeyglass.html _back to main_>
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

@@ -1,0 +1,298 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>mackeyglass</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2009-06-09">
+      <meta name="m-file" content="mackeyglass"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>mackeyglass</h1>
+         <introduction>
+            <p>This script generates a Mackey-Glass time series using the 4th order Runge-Kutta method. The code is a straighforward translation
+               in Matlab of C source code provided by Roger Jang, which is available <a href="http://neural.cs.nthu.edu.tw/jang/dataset/mg/mg.c">here</a></p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">The theory</a></li>
+               <li><a href="#13">Input parameters</a></li>
+               <li><a href="#14">Main algorithm</a></li>
+            </ul>
+         </div>
+         <h2>The theory<a name="1"></a></h2>
+         <p>Mackey-Glass time series refers to the following, delayed differential equation:</p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq83123.png"> </p>
+         <p>It can be numerically solved using, for example, the 4th order Runge-Kutta method, at discrete, equally spaced time steps:</p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq89952.png"> </p>
+         <p>where the function <a href="mackeyglass_rk4.html">mackeyglass_rk4</a> numerically solves the Mackey-Glass delayed differential equation using the 4-th order Runge Kutta. This is the RK4 method:
+         </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq08182.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq19931.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq21531.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq24500.png"> </p>
+         <p><img vspace="5" hspace="5" src="mackeyglass_eq18147.png"> </p>
+         <p>where <a href="mackeyglass_eq.html">mackeyglass_eq</a> is the function which return the value of the Mackey-Glass delayed differential equation in (1) once its inputs and its parameters
+            (a,b) are provided.
+         </p>
+         <p>Here is an example:</p>
+         <h2>Input parameters<a name="13"></a></h2><pre class="codeinput">a        = 0.2;     <span class="comment">% value for a in eq (1)</span>
+b        = 0.1;     <span class="comment">% value for b in eq (1)</span>
+tau      = 17;		<span class="comment">% delay constant in eq (1)</span>
+x0       = 1.2;		<span class="comment">% initial condition: x(t=0)=x0</span>
+deltat   = 0.1;	    <span class="comment">% time step size (which coincides with the integration step)</span>
+sample_n = 12000;	<span class="comment">% total no. of samples, excluding the given initial condition</span>
+interval = 1;	    <span class="comment">% output is printed at every 'interval' time steps</span>
+</pre><h2>Main algorithm<a name="14"></a></h2>
+         <div>
+            <ul>
+               <li>x_t             : x at instant t         , i.e. x(t)        (current value of x)</li>
+               <li>x_t_minus_tau   : x at instant (t-tau)   , i.e. x(t-tau)</li>
+               <li>x_t_plus_deltat : x at instant (t+deltat), i.e. x(t+deltat) (next value of x)</li>
+               <li>X               : the (sample_n+1)-dimensional vector containing x0 plus all other computed values of x</li>
+               <li>T               : the (sample_n+1)-dimensional vector containing time samples</li>
+               <li>x_history       : a circular vector storing all computed samples within x(t-tau) and x(t)</li>
+            </ul>
+         </div><pre class="codeinput">time = 0;
+index = 1;
+history_length = floor(tau/deltat);
+x_history = zeros(history_length, 1); <span class="comment">% here we assume x(t)=0 for -tau &lt;= t &lt; 0</span>
+x_t = x0;
+
+X = zeros(sample_n+1, 1); <span class="comment">% vector of all generated x samples</span>
+T = zeros(sample_n+1, 1); <span class="comment">% vector of time samples</span>
+
+<span class="keyword">for</span> i = 1:sample_n+1,
+    X(i) = x_t;
+    <span class="keyword">if</span> (mod(i-1, interval) == 0),
+         disp(sprintf(<span class="string">'%4d %f'</span>, (i-1)/interval, x_t));
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> tau == 0,
+        x_t_minus_tau = 0.0;
+    <span class="keyword">else</span>
+        x_t_minus_tau = x_history(index);
+    <span class="keyword">end</span>
+
+    x_t_plus_deltat = mackeyglass_rk4(x_t, x_t_minus_tau, deltat, a, b);
+
+    <span class="keyword">if</span> (tau ~= 0),
+        x_history(index) = x_t_plus_deltat;
+        index = mod(index, history_length)+1;
+    <span class="keyword">end</span>
+    time = time + deltat;
+    T(i) = time;
+    x_t = x_t_plus_deltat;
+<span class="keyword">end</span>
+
+
+figure
+plot(T, X);
+set(gca,<span class="string">'xlim'</span>,[0, T(end)]);
+xlabel(<span class="string">'t'</span>);
+ylabel(<span class="string">'x(t)'</span>);
+title(sprintf(<span class="string">'A Mackey-Glass time serie (tau=%d)'</span>, tau));
+</pre><pre class="codeoutput">   0 1.200000
+   1 1.188060
+   2 1.176238
+   3 1.164535
+   4 1.152947
+   5 1.141475
+   6 1.130117
+   7 1.118873
+   8 1.107740
+   9 1.096717
+  10 1.085805
+  11 1.075001
+  12 1.064305
+  13 1.053715
+  14 1.043230
+  15 1.032850
+  16 1.022573
+  17 1.012398
+  18 1.002324
+  19 0.992351
+  20 0.982477
+...</pre><img vspace="5" hspace="5" src="mackeyglass_01.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% mackeyglass
+% This script generates a Mackey-Glass time series using the 4th order
+% Runge-Kutta method.
+% The code is a straighforward translation in Matlab of C source code provided by Roger Jang,
+% which is available <http://neural.cs.nthu.edu.tw/jang/dataset/mg/mg.c here>
+
+
+%% The theory
+% Mackey-Glass time series refers to the following, delayed differential
+% equation:
+
+%%
+% 
+% $$\frac{dx(t)}{dt}=\frac{ax(t-\tau)}{1+x(t-\tau)^{10}}-bx(t)
+% \hspace{1cm} (1)$$
+% 
+
+%% 
+% It can be numerically solved using, for example, the 4th order
+% Runge-Kutta method, at discrete, equally spaced time steps:
+
+%%
+% 
+% $$x(t+\Delta t) = mackeyglass\_rk4(x(t), x(t-\tau), \Delta t, a, b)$$
+%
+
+%%
+% where the function <mackeyglass_rk4.html mackeyglass_rk4> numerically solves the
+% Mackey-Glass delayed differential equation using the 4-th order Runge
+% Kutta. This is the RK4 method:
+
+
+%%
+% $$k_1=\Delta t \cdot mackeyglass\_eq(x(t), x(t-\tau), a, b)$$
+%%
+% $$k_2=\Delta t \cdot mackeyglass\_eq(x(t+\frac{1}{2}k_1), x(t-\tau), a, b)$$
+%%
+% $$k_3=\Delta t \cdot mackeyglass\_eq(x(t+\frac{1}{2}k_2), x(t-\tau), a, b)$$
+%%
+% $$k_4=\Delta t \cdot mackeyglass\_eq(x(t+k_3), x(t-\tau), a, b)$$
+%%
+% $$x(t+\Delta t) = x(t) + \frac{k_1}{6}+ \frac{k_2}{3} + \frac{k_3}{6} +
+% \frac{k_4}{6}$$
+
+%%
+% where <mackeyglass_eq.html mackeyglass_eq> is the function which return 
+% the value of the Mackey-Glass delayed differential equation in (1)
+% once its inputs and its parameters (a,b) are provided.
+
+
+
+%%
+% Here is an example:
+
+%% Input parameters
+a        = 0.2;     % value for a in eq (1)
+b        = 0.1;     % value for b in eq (1)
+tau      = 17;		% delay constant in eq (1)
+x0       = 1.2;		% initial condition: x(t=0)=x0
+deltat   = 0.1;	    % time step size (which coincides with the integration step)
+sample_n = 12000;	% total no. of samples, excluding the given initial condition
+interval = 1;	    % output is printed at every 'interval' time steps
+
+
+%% Main algorithm
+% * x_t             : x at instant t         , i.e. x(t)        (current value of x)
+% * x_t_minus_tau   : x at instant (t-tau)   , i.e. x(t-tau)   
+% * x_t_plus_deltat : x at instant (t+deltat), i.e. x(t+deltat) (next value of x)
+% * X               : the (sample_n+1)-dimensional vector containing x0 plus all other computed values of x
+% * T               : the (sample_n+1)-dimensional vector containing time samples
+% * x_history       : a circular vector storing all computed samples within x(t-tau) and x(t)
+
+time = 0;
+index = 1;
+history_length = floor(tau/deltat);
+x_history = zeros(history_length, 1); % here we assume x(t)=0 for -tau <= t < 0
+x_t = x0;
+
+X = zeros(sample_n+1, 1); % vector of all generated x samples
+T = zeros(sample_n+1, 1); % vector of time samples
+
+for i = 1:sample_n+1,
+    X(i) = x_t;
+    if (mod(i-1, interval) == 0),
+         disp(sprintf('%4d %f', (i-1)/interval, x_t));
+    end
+    if tau == 0,
+        x_t_minus_tau = 0.0;
+    else
+        x_t_minus_tau = x_history(index);
+    end
+
+    x_t_plus_deltat = mackeyglass_rk4(x_t, x_t_minus_tau, deltat, a, b);
+
+    if (tau ~= 0),
+        x_history(index) = x_t_plus_deltat;
+        index = mod(index, history_length)+1;
+    end
+    time = time + deltat;
+    T(i) = time;
+    x_t = x_t_plus_deltat;
+end
+
+
+figure
+plot(T, X);
+set(gca,'xlim',[0, T(end)]);
+xlabel('t');
+ylabel('x(t)');
+title(sprintf('A Mackey-Glass time serie (tau=%d)', tau));
+
+##### SOURCE END #####
+-->
+   </body>
+</html>
