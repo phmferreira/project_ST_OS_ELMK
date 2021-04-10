@@ -1,4 +1,4 @@
-# Project of Time Serie Course - Online Sequential Extreme Learning Machine with Kernels - OS-ELMK
+# Project of Time Series Course - Online Sequential Extreme Learning Machine with Kernels - OS-ELMK
 
 Implementation of Online sequential extreme learning machine with kernels for nonstationary time series prediction.
 
